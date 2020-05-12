@@ -2,7 +2,7 @@
 Title: Random Sequence Generator
 ShortSum: Generates a sequence of random numbers between 0 (included) and MAXNUM (excluded)
 Author: Robin Steidle
-Version: 0.2
+Version: 0.3
 LastEdit: 12.05.2020
 */
 
@@ -12,13 +12,23 @@ LastEdit: 12.05.2020
 #include <stdlib.h>
 #include <time.h>
 
-void main() {
+void main(int argc, char *argv[]) {
+    int l; // Length of sequence
+
+    if (argc > 2) {
+        printf("[ERROR]Expected 1 Argument, got %d!\n", argc-1);
+        exit(EXIT_FAILURE);
+    } else if (argc == 1) {
+        printf("[WARNING]Expected 1 Argument, got 0. Default value is used!\n");
+        l = 10;
+    } else {
+        l = atoi(argv[1]);
+    }
+
     // for more randomness: use time as seed
     srand(time(0));
 
-    int n=10; // Length of sequence
-
-    for (int i=0; i<=n; i++) {
+    for (int i=0; i<=l; i++) {
         int num = rand()%MAXNUM;
         printf("%d\n", num);
     }
