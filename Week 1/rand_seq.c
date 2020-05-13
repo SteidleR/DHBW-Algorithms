@@ -3,7 +3,7 @@ Title: Random Sequence Generator
 ShortSum: Generates a sequence of random numbers between 0 (included) and MAXNUM (excluded)
 Author: Robin Steidle
 Version: 0.31
-LastEdit: 12.05.2020
+LastEdit: 13.05.2020
 */
 
 #define MAXNUM 1000
