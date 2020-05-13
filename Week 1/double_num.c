@@ -3,7 +3,7 @@ Title: Double Numbers
 ShortSum: Double the Numbers in a file
 LongDescr: Reads Integers from a file and outputs the double. File is passed as Command Line Argument
 Author: Robin Steidle
-Version: 0.2
+Version: 0.3
 LastEdit: -
 */
 
@@ -15,13 +15,18 @@ void main(int argc, char *argv[]) {
         printf("[ERROR]Expected 1 Argument, got %d!\n", argc-1);
         exit(EXIT_FAILURE);
     } else if (argc == 1) {
-        printf("[ERROR]Expected 1 Argument, got 0.\n");
-        exit(EXIT_FAILURE);
+        FILE *instream = fopen("/dev/stdin","r");
+        char chunk[256];
+        while(fgets(chunk,sizeof(chunk), instream) != NULL) {
+            int n = atoi(chunk);
+            printf("%s *2: %d\n",chunk, n*2);
+        }
     } else {
         FILE *fp = fopen(argv[1],"r");
+
         if (fp==NULL) {
-            printf("[ERROR]Unable to open file!");
-            exit(EXIT_FAILURE);
+                printf("[ERROR]Unable to open file!");
+                exit(EXIT_FAILURE);
         }
         char chunk[256];
 
@@ -31,3 +36,4 @@ void main(int argc, char *argv[]) {
         }
     }
 }
+    
