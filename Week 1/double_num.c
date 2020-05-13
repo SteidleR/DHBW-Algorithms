@@ -1,11 +1,33 @@
 /*
 Title: Double Numbers
 ShortSum: Double the Numbers in a file
+LongDescr: Reads Integers from a file and outputs the double. File is passed as Command Line Argument
 Author: Robin Steidle
-Version: 0.1
+Version: 0.2
 LastEdit: -
 */
 
-void main() {
+#include <stdio.h>
+#include <stdlib.h>
 
+void main(int argc, char *argv[]) {
+    if (argc > 2) {
+        printf("[ERROR]Expected 1 Argument, got %d!\n", argc-1);
+        exit(EXIT_FAILURE);
+    } else if (argc == 1) {
+        printf("[ERROR]Expected 1 Argument, got 0.\n");
+        exit(EXIT_FAILURE);
+    } else {
+        FILE *fp = fopen(argv[1],"r");
+        if (fp==NULL) {
+            printf("[ERROR]Unable to open file!");
+            exit(EXIT_FAILURE);
+        }
+        char chunk[256];
+
+        while(fgets(chunk, sizeof(chunk), fp) != NULL) {
+            int n = atoi(chunk);
+            printf("%d\n",n*2);
+        }
+    }
 }
