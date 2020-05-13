@@ -24,6 +24,7 @@ void main(int argc, char *argv[]) {
         while(fgets(chunk,sizeof(chunk), instream) != NULL) {
             int len = strlen(chunk);
             chunk[len-1] = *"";
+            //printf("%s: ",chunk);
             reverse(chunk);
             printf("%s\n",chunk);
         }
