@@ -2,7 +2,7 @@
 Title: Reverse String
 ShortSum: Reverse the String readed from file
 Author: Robin Steidle
-Version: 0.2
+Version: 0.3
 LastEdit: 13.05.2020
 */
 
