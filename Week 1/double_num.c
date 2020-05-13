@@ -21,7 +21,8 @@ void main(int argc, char *argv[]) {
         char chunk[256];
         while(fgets(chunk,sizeof(chunk), instream) != NULL) {
             int n = atoi(chunk);
-            printf("%s *2: %d\n",chunk, n*2);
+            //printf("%s *2:",chunk);
+            printf("%d\n",n*2);
         }
     } else {
         // 1 Argument -> file name
@@ -33,6 +34,7 @@ void main(int argc, char *argv[]) {
         char chunk[256];
         while(fgets(chunk, sizeof(chunk), fp) != NULL) {
             int n = atoi(chunk);
+            //printf("%s *2:",chunk);
             printf("%d\n",n*2);
         }
     }

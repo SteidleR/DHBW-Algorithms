@@ -12,7 +12,7 @@ LastEdit: 13.05.2020
 
 void reverse(char*);
 
-void main(int argc, char *argv) {
+void main(int argc, char *argv[]) {
     if (argc > 2) {
         // to many Arguments
         printf("[ERROR]Expected 1 Argument, got %d!\n", argc-1);
@@ -24,12 +24,24 @@ void main(int argc, char *argv) {
         while(fgets(chunk,sizeof(chunk), instream) != NULL) {
             int len = strlen(chunk);
             chunk[len-1] = *"";
-            printf("%s: ",chunk);
             reverse(chunk);
             printf("%s\n",chunk);
         }
     } else {
-        
+        // 1 Argument -> file name
+        FILE *fp = fopen(argv[1],"r");
+        if (fp==NULL) {
+                printf("[ERROR]Unable to open file!");
+                exit(EXIT_FAILURE);
+        }
+        char chunk[256];
+        while(fgets(chunk, sizeof(chunk), fp) != NULL) {
+            int len = strlen(chunk);
+            chunk[len-1] = *"";
+            //printf("%s: ",chunk);
+            reverse(chunk);
+            printf("%s\n",chunk);
+        }
     }
 }
 
