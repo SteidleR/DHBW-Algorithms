@@ -1,6 +1,6 @@
 /*
 Title: Reverse String
-ShortSum: Reverse the String readed from file
+ShortSum: Reverse the String readed from file or stdin PIPE
 Author: Robin Steidle
 Version: 0.3
 LastEdit: 13.05.2020
