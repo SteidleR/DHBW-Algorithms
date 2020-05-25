@@ -3,7 +3,7 @@ Title: Linear List
 ShortSum: Linear List storing strings
 Descr: 
     Assignment Week 2
-    Read amount of string, output in reverse order + output in original order
+    Read strings from file, output in reverse order + output in original order
 Author: Robin Steidle
 LastEdit: 25.05.2020
 */
@@ -61,6 +61,8 @@ void main(int argc, char *argv[]) {
 
     printf("---- Original Order ----\n");
     RevList(ptr_first);
+
+    LinListFree(ptr_first);
 }
 
 
@@ -79,10 +81,10 @@ void LinListFreeCell(LinList_p junk) {
 
 
 void LinListFree(LinList_p junk) {
-    LinList_p ptr = junk;
-    while(ptr->next) {
-        junk = ptr;
-        ptr = ptr->next;
+    LinList_p ptr;
+    while(ptr_first) {
+        ptr = LinListExtractFirst(ptr_first);
+        LinListFree(ptr);
     }
 }
 
