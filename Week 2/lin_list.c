@@ -1,6 +1,6 @@
 /*
 Title: Linear List
-ShortSum: Linear List storing strings
+ShortSum: Linear List storing strings readed from file
 Descr: 
     Assignment Week 2
     Read strings from file, output in reverse order + output in original order
@@ -42,7 +42,7 @@ void main(int argc, char *argv[]) {
     if (argc == 2) {
         fp = fopen(argv[1], "r");
         if(!fp) {
-            printf("Couldn't find the file or the file is empty!");
+            printf("Couldn't find the file!\n");
             exit(EXIT_FAILURE);
         }
     }
