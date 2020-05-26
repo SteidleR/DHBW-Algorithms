@@ -18,7 +18,6 @@ typedef struct lin_list
     struct lin_list *next;
 }LinListCell, *LinList_p;
 
-
 LinList_p LinListAllocCell(char*);
 void LinListFreeCell(LinList_p);
 void LinListFree(LinList_p);
@@ -47,10 +46,10 @@ void main(int argc, char *argv[]) {
         }
     }
 
+
+    // Read File
     char chunk[256];
-    while(fgets(chunk, sizeof(chunk), fp) != NULL) {
-        int len = strlen(chunk);
-        chunk[len-1] = *"";
+    while(fgets(chunk, sizeof(chunk), fp)) {
         printf("%s\n",chunk);
         LinList_p cell = LinListAllocCell(chunk);
         ptr_first = LinListInsertFirst(ptr_first, cell);
@@ -65,21 +64,21 @@ void main(int argc, char *argv[]) {
     LinListFree(ptr_first);
 }
 
-
+// Create new cell and return pointer to it
 LinList_p LinListAllocCell(char *payload) {
-    LinList_p cell = malloc(sizeof(LinListCell));
+    LinList_p cell = (LinList_p) malloc(sizeof(LinListCell));
     cell->payload = strdup(payload);
     cell->next = NULL;
     return(cell);
 }
 
-
+// Free allocated memory of cell junk is pointing to
 void LinListFreeCell(LinList_p junk) {
     free(junk->payload);
     free(junk);
 }
 
-
+// Free allocated memory of linear list
 void LinListFree(LinList_p junk) {
     LinList_p ptr;
     while(ptr_first) {
@@ -88,13 +87,13 @@ void LinListFree(LinList_p junk) {
     }
 }
 
-
+// inserts cell at the beginning of list; Returns pointer to the new cell
 LinList_p LinListInsertFirst(LinList_p anchor, LinList_p newcell) {
     newcell->next = anchor;
     return(newcell);
 }
 
-
+// Removes cell from list and returns pointer to removed cell
 LinList_p LinListExtractFirst(LinList_p anchor) {
     if(anchor==NULL) {
         return(NULL);
@@ -104,7 +103,7 @@ LinList_p LinListExtractFirst(LinList_p anchor) {
     return(ptr);
 }
 
-
+// prints every cell-payload in list
 void Listprint(LinList_p fptr) {
     while(fptr) {
         printf("%s\n", fptr->payload);
@@ -112,7 +111,7 @@ void Listprint(LinList_p fptr) {
     }
 }
 
-
+// reverse list, prints it and free memory of the new list
 void RevList(LinList_p fptr) {
     LinList_p ptr_first_rev = NULL, ptr;
 
