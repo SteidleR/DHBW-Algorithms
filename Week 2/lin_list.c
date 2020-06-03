@@ -5,7 +5,7 @@ Descr:
     Assignment Week 2
     Read strings from file, output in reverse order + output in original order
 Author: Robin Steidle
-LastEdit: 25.05.2020
+LastEdit: 26.05.2020
 */
 
 #include <string.h>
@@ -50,6 +50,8 @@ void main(int argc, char *argv[]) {
     // Read File
     char chunk[256];
     while(fgets(chunk, sizeof(chunk), fp)) {
+        int len = strlen(chunk);
+        chunk[len-1] = *"";
         printf("%s\n",chunk);
         LinList_p cell = LinListAllocCell(chunk);
         ptr_first = LinListInsertFirst(ptr_first, cell);
@@ -62,6 +64,8 @@ void main(int argc, char *argv[]) {
     RevList(ptr_first);
 
     LinListFree(ptr_first);
+
+    fclose(fp);
 }
 
 // Create new cell and return pointer to it
