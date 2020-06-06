@@ -1,8 +1,10 @@
-import sys
-sys.setrecursionlimit(10**5) 
+import copy
+import time
+import os
 
-labname = "lab.txt"
-step = {"U": [0, -1], "D": [0, 1], "R": [1, 0], "L": [-1, 0]}
+
+labname = "testlab2.txt"
+stepName = {"U": [0, -1], "D": [0, 1], "R": [1, 0], "L": [-1, 0]}
 
 # Coords of Startpoint
 sx = None
@@ -32,48 +34,103 @@ def printLab(arr):
     for l in arr:
         print("".join(l))
 
+def printPath(path, labn):
+    for i in range(1, len(path)-2):
+        p = path[i]
+        labn[p[1]][p[0]] = "."
+    printLab(labn)
+
+
 
 # ----------- Functions to solve the Lab ----------------
 
 
-def checkNeighbors(x, y, px, py, lab):
-    nextp = []
 
-    for key, val in step.items():
+def checkNeighbors(p, pp, lab, path):
+    x = p[0]
+    y = p[1]
+    px = pp[0]
+    py = pp[1]
+    nextp = []
+    for key, val in stepName.items():
+        np = [x+val[0], y+val[1]]
         if px-val[0] == x and py-val[1] == y:
             continue
-        if lab[y+val[1]][x+val[0]] != "#":
+        elif np in path:
+            continue
+        elif lab[y+val[1]][x+val[0]] != "#":
             nextp.append(key)
     return nextp
 
-def walk(x, y, px, py, lab):
-    path = {}
-    if x == ex and y == ey:
-        return True
-    steps = checkNeighbors(x, y, px, py, lab)
-    if steps == []:
-        return False
-    for w in steps:
-        path[w] = walk(x+step[w][0], y+step[w][1], x, y, lab)
-    return path
+def walk(p, step):
+    p_new = [p[0] + stepName[step][0], p[1] + stepName[step][1]]
+    return p_new
 
-def solveLab(lab):
-    tree = {"S": walk(sx, sy, sx, sy, lab)}
-    def loop(path):
-        paths = []
-        for key, val in path.items():
-            if val == True:
-                paths.append("X")
-            else:
-                p = loop(val)
-                for x in p:
-                    paths.append(key+x)
-        return paths
-    return(loop(tree))
+def checkBetter(x,y, path, solvedPaths):
+    for sp in solvedPaths:
+        if [x,y] in sp:
+            if len(path) > len(sp[:sp.index([x,y])]):
+                return True
+    return False
+
+def checkSnake(p, pp, path):
+    for key, val in stepName.items():
+        testp = [p[0]+val[0], p[1]+val[1]]
+        if testp == pp:
+            continue
+        elif testp in path:
+            return True
+    return False
+
+def calculateCost(path):
+    return len(path)
+
+def solveLab(x, y, lab):
+    solvedPaths = []
+    currentPath = [[sx,sy]]
+    pendingPaths = []
+    while True:
+        while True:
+            os.system("clear")
+            printPath(currentPath, lab)
+            # Check if Path is at Endpoint
+            if x==ex and y==ey:
+                currentPath.append(True)
+                solvedPaths.append(currentPath)
+                break
+
+            # Get Available steps to walk
+            steps = checkNeighbors(currentPath[-1], currentPath[-1 if len(currentPath)==1 else -2], lab, currentPath)
+            
+            if len(steps) > 1:
+                for i in range(1, len(steps)):
+                    pendingPaths.append([*currentPath, walk(currentPath[-1], steps[i])])
+            elif len(steps)==0:
+                break
+            [x,y] = walk(currentPath[-1], steps[0])
+
+            # Check if other path is faster
+            if checkBetter(x,y, currentPath, solvedPaths):
+                break
+            if checkSnake([x,y], currentPath[-1], currentPath):
+                break
+
+            currentPath.append([x,y])
+        if len(pendingPaths):
+            currentPath = pendingPaths.pop(0)
+            [x,y] = currentPath[-1]
+        else:
+            break
+    return solvedPaths
 
 
 # ----------------------------------------------------------
 
 if __name__ == "__main__": 
-
-    print(solveLab(readLab(labname)))
+    tstart = time.time()
+    lab = readLab(labname)
+    paths = solveLab(sx, sy, lab)
+    paths.sort(key=lambda s: len(s))
+    printPath(paths[0], lab)
+    tend = time.time()
+    print("Time needed to solve: ", tend - tstart)
