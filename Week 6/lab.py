@@ -1,9 +1,12 @@
 import copy
 import time
 import os
+import ray
+
+ray.init()
 
 
-labname = "testlab2.txt"
+labname = "testlabtheseus.txt"
 stepName = {"U": [0, -1], "D": [0, 1], "R": [1, 0], "L": [-1, 0]}
 
 # Coords of Startpoint
@@ -67,10 +70,14 @@ def walk(p, step):
     return p_new
 
 def checkBetter(x,y, path, solvedPaths):
-    for sp in solvedPaths:
+    @ray.remote
+    def check(x,y, sp):
         if [x,y] in sp:
             if len(path) > len(sp[:sp.index([x,y])]):
                 return True
+    b = [check.remote(x,y,sp) for sp in solvedPaths]
+    if True  in ray.get(b):
+        return True
     return False
 
 def checkSnake(p, pp, path):
@@ -91,8 +98,8 @@ def solveLab(x, y, lab):
     pendingPaths = []
     while True:
         while True:
-            os.system("clear")
-            printPath(currentPath, lab)
+            #os.system("clear")
+            #printPath(currentPath, lab)
             # Check if Path is at Endpoint
             if x==ex and y==ey:
                 currentPath.append(True)
