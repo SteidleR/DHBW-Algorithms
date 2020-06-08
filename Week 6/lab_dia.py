@@ -2,8 +2,8 @@ import copy
 import time
 import os
 
-labname = ["testlabtheseus.txt", "testlab2.txt", "lab.txt"][0]
-stepName = {"U": [0, -1], "D": [0, 1], "R": [1, 0], "L": [-1, 0]}
+labname = "testlabtheseus.txt"
+stepName = {"U": [0, -1], "D": [0, 1], "R": [1, 0], "L": [-1, 0], "UR": [1, -1], "UL": [-1, -1], "DR": [1, 1], "DL": [-1, 1]}
 
 # Coords of Startpoint
 sx = None
@@ -39,6 +39,8 @@ def printPath(path, labn):
         labn[p[1]][p[0]] = "."
     printLab(labn)
 
+
+
 # ----------- Functions to solve the Lab ----------------
 
 def checkNeighbors(p, pp, lab, path):
@@ -51,12 +53,10 @@ def checkNeighbors(p, pp, lab, path):
         np = [x+val[0], y+val[1]]
         if px-val[0] == x and py-val[1] == y:
             continue
-        try:
-            path.index(np)
+        elif np in path:
             continue
-        except:
-            if lab[np[1]][np[0]] != "#":
-                nextp.append(key)
+        elif lab[np[1]][np[0]] != "#":
+            nextp.append(key)
     return nextp
 
 def walk(p, step):
@@ -64,23 +64,13 @@ def walk(p, step):
     return p_new
 
 
-def checkBetter(x,y, path, solvedPaths, lab):
-    worsePaths = []
-    for i in range(len(solvedPaths)):
-        sp = solvedPaths[i]
-        try:
-            #lensp = sp.index([x,y])
-            #lenpath = len(path)
-
-            lensp = calcCosts(lab, sp[:sp.index([x,y])])
-            lenpath = calcCosts(lab, path)
-            if lenpath > lensp:
-                return True, worsePaths
-            elif lenpath < lensp:
-                worsePaths.append(i)
-        except:
-            continue
-    return False, worsePaths
+def checkBetter(x,y, path, solvedPaths):
+    for sp in solvedPaths:
+        s = set(sp)
+        if [x,y] in s:
+            if len(path) > len(sp[:sp.index([x,y])]):
+                return True
+    return False
 
 def checkSnake(p, pp, path):
     for key, val in stepName.items():
@@ -91,39 +81,23 @@ def checkSnake(p, pp, path):
             path.index(testp)
             return True
         except:
-            continue
+            pass
+            
     return False
 
-def calcCosts(lab, path):
-    costs = 0
-    for p in path:
-        if p == True:
-            break
-        currentPoint = lab[p[1]][p[0]]
-        if currentPoint == " ":
-            costs += 1
-        elif currentPoint == "S" or currentPoint == "X":
-            costs += 1
-        else:
-            costs += int(lab[p[1]][p[0]])
-    return costs
+def calculateCost(path):
+    return len(path)
 
 def solveLab(x, y, lab):
     solvedPaths = []
     currentPath = [[sx,sy]]
     pendingPaths = []
-    worsePath = []
     while True:
         while True:
             # Check if Path is at Endpoint
             if x==ex and y==ey:
                 currentPath.append(True)
                 solvedPaths.append(currentPath)
-                if worsePath:
-                    worsePath = list(dict.fromkeys(worsePath))
-                    worsePath.sort()
-                    for i in worsePath[::-1]:
-                        del solvedPaths[i]
                 break
 
             # Get Available steps to walk
@@ -137,18 +111,12 @@ def solveLab(x, y, lab):
             [x,y] = walk(currentPath[-1], steps[0])
 
             # Check if other path is faster
-            checkB, wPath = checkBetter(x,y, currentPath, solvedPaths, lab)
-            if wPath != []:
-                worsePath = [*worsePath, *wPath]
-            if checkB:
+            if checkBetter(x,y, currentPath, solvedPaths):
                 break
-
-            # Check if path is snake
             if checkSnake([x,y], currentPath[-1], currentPath):
                 break
 
             currentPath.append([x,y])
-        worsePath = []
         if len(pendingPaths):
             currentPath = pendingPaths.pop(0)
             [x,y] = currentPath[-1]
@@ -163,8 +131,8 @@ if __name__ == "__main__":
     tstart = time.time()
     lab = readLab(labname)
     paths = solveLab(sx, sy, lab)
-    tend = time.time()
+    print(len(paths))
     paths.sort(key=lambda s: len(s))
-    print("Cost: ", calcCosts(lab, paths[0]))
     printPath(paths[0], lab)
+    tend = time.time()
     print("Time needed to solve: ", tend - tstart)
