@@ -66,33 +66,21 @@ def walk(p, step):
 
 def checkBetter(x,y, path, solvedPaths, lab):
     worsePaths = []
+    isBetter = False
     for i in range(len(solvedPaths)):
         sp = solvedPaths[i]
         try:
             #lensp = sp.index([x,y])
             #lenpath = len(path)
-
             lensp = calcCosts(lab, sp[:sp.index([x,y])])
             lenpath = calcCosts(lab, path)
             if lenpath > lensp:
-                return True, worsePaths
+                isBetter = True
             elif lenpath < lensp:
                 worsePaths.append(i)
         except:
             continue
-    return False, worsePaths
-
-def checkSnake(p, pp, path):
-    for key, val in stepName.items():
-        testp = [p[0]+val[0], p[1]+val[1]]
-        if testp == pp:
-            continue
-        try:
-            path.index(testp)
-            return True
-        except:
-            continue
-    return False
+    return isBetter, worsePaths
 
 def calcCosts(lab, path):
     costs = 0
@@ -143,10 +131,6 @@ def solveLab(x, y, lab):
             if checkB:
                 break
 
-            # Check if path is snake
-            if checkSnake([x,y], currentPath[-1], currentPath):
-                break
-
             currentPath.append([x,y])
         worsePath = []
         if len(pendingPaths):
@@ -162,7 +146,10 @@ def solveLab(x, y, lab):
 if __name__ == "__main__": 
     tstart = time.time()
     lab = readLab(labname)
-    paths = solveLab(sx, sy, lab)
+    try:
+        paths = solveLab(sx, sy, lab)
+    except KeyboardInterrupt:
+        exit()
     tend = time.time()
     paths.sort(key=lambda s: len(s))
     print("Cost: ", calcCosts(lab, paths[0]))
