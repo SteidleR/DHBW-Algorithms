@@ -59,21 +59,28 @@ def checkNeighbors(p, pp, lab, path):
                 nextp.append(key)
     return nextp
 
-def walk(p, step):
+def walk(p, step, cost, lab):
     p_new = [p[0] + stepName[step][0], p[1] + stepName[step][1]]
+    p_new.append(cost + getCost(p_new, lab))
     return p_new
 
 
-def checkBetter(x,y, path, solvedPaths, lab):
+def checkBetter(x,y, path, solvedPaths, lab, cost):
     worsePaths = []
+    lensp = None
     for i in range(len(solvedPaths)):
         sp = solvedPaths[i]
         try:
             #lensp = sp.index([x,y])
             #lenpath = len(path)
 
-            lensp = calcCosts(lab, sp[:sp.index([x,y])])
-            lenpath = calcCosts(lab, path)
+            for p in sp:
+                if p[:2] == [x,y]:
+                    lensp = p[2]
+                    break
+            if not lensp:
+                raise Exception()
+            lenpath = cost
             if lenpath > lensp:
                 return True, worsePaths
             elif lenpath < lensp:
@@ -93,6 +100,15 @@ def checkSnake(p, pp, path):
         except:
             continue
     return False
+
+def getCost(p, lab):
+    p = lab[p[1]][p[0]]
+    if p == " ":
+        return 1
+    elif p == "S" or p == "X":
+        return 1
+    else:
+        return int(p)
 
 def calcCosts(lab, path):
     costs = 0
@@ -114,6 +130,7 @@ def solveLab(x, y, lab):
     pendingPaths = []
     worsePath = []
     while True:
+           cost = 0
         while True:
             # Check if Path is at Endpoint
             if x==ex and y==ey:
@@ -131,13 +148,13 @@ def solveLab(x, y, lab):
             
             if len(steps) > 1:
                 for i in range(1, len(steps)):
-                    pendingPaths.append([*currentPath, walk(currentPath[-1], steps[i])])
+                    pendingPaths.append([*currentPath, walk(currentPath[-1][:2], steps[i], cost, lab)])
             elif len(steps)==0:
                 break
-            [x,y] = walk(currentPath[-1], steps[0])
+            [x,y, cost] = walk(currentPath[-1][:2], steps[0], cost, lab)
 
             # Check if other path is faster
-            checkB, wPath = checkBetter(x,y, currentPath, solvedPaths, lab)
+            checkB, wPath = checkBetter(x,y, currentPath, solvedPaths, lab, cost)
             if wPath != []:
                 worsePath = [*worsePath, *wPath]
             if checkB:
@@ -151,7 +168,7 @@ def solveLab(x, y, lab):
         worsePath = []
         if len(pendingPaths):
             currentPath = pendingPaths.pop(0)
-            [x,y] = currentPath[-1]
+            [x,y] = currentPath[-1][:2]
         else:
             break
     return solvedPaths
