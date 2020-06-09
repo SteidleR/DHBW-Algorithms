@@ -1,7 +1,7 @@
 app_info = {
 "Title": "Lab Solver",
 "ShortSum": "Solves a lab readed from file",
-"LongDescr": "Solves a labyrinth using the Depth-First Order algorithm. Labyrinth is readed from a file. Walls of the labyrinth are #",
+"LongDescr": "Solves a labyrinth using the Depth-First Search algorithm. Labyrinth is readed from a file. Walls of the labyrinth are #",
 "Author": "Robin Steidle",
 "Version": "0.5",
 "LastEdit": "09.06.2020"
