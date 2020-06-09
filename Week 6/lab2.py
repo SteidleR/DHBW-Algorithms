@@ -133,7 +133,7 @@ def solve(lab, sp, ep):
                 break
             if point in currentPath[:-1]:
                 break
-        
+
         if towalkPaths:
             currentPath = towalkPaths.pop()
             point = currentPath[-1]
