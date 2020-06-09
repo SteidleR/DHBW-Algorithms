@@ -3,8 +3,8 @@ app_info = {
 "ShortSum": "Solves a lab readed from file",
 "LongDescr": "Solves a labyrinth using the Depth-First Order algorithm. Labyrinth is readed from a file. Walls of the labyrinth are #",
 "Author": "Robin Steidle",
-"Version": "0.4",
-"LastEdit": "08.06.2020"
+"Version": "0.5",
+"LastEdit": "09.06.2020"
 }
 
 import time
@@ -37,17 +37,34 @@ def readLab(fname):
             count += 1
     return arr, [sx, sy], [ex, ey]
 
-def printLab(arr):
-    for l in arr:
+def printLab(lab):
+    """
+    Prints the labyrinth to the screen
+
+    :param lab: 2D Array storing the lab
+    """
+    for l in lab:
         print("".join(l))
 
 def printPath(path, lab):
+    """
+    Adds the given Path to the labyrinth array
+
+    :param path: path to print
+    :param lab:  2D Array storing the Lab
+    """
     for i in range(len(path)):
         p = path[i]
         lab[p[1]][p[0]] = "\u001b[47m\u001b[34m{}\u001b[0m".format(lab[p[1]][p[0]])
     printLab(lab)
 
 def calculateCost(path, lab):
+    """
+    Calculates the Cost for a path in the labyrinth
+
+    :param path: path to calculate the cost
+    :param lab:  2D Array storing the lab
+    """
     cost = 0
     for p in path:
         char = lab[p[1]][p[0]]
@@ -58,6 +75,7 @@ def calculateCost(path, lab):
         elif char in "0123456789":
             cost += int(char)
     return cost
+
 
 # ----------- Functions to solve the Lab ----------------
 
