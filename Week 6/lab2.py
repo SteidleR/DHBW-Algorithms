@@ -11,7 +11,8 @@ import time
 import os
 
 # Available test labyrinths to solve
-labname = ["testlabtheseus.txt", "testlab2.txt", "lab.txt", "lab_big.txt"][0]
+labname = ["testlabtheseus.txt", "testlab2.txt", "lab.txt", "lab_big.txt"][2]
+
 stepName = {"U": [0, -1], "D": [0, 1], "R": [1, 0], "L": [-1, 0]}
 
 def readLab(fname):
