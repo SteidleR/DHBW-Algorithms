@@ -49,7 +49,8 @@ def boardPrint(board):
     else:
         pass
 
-def checkVictoryCol(board, player, col):
+
+def checkVictoryCol(board, player, col) -> bool:
     """Check Victory in given Column for player index
 
     Args:
@@ -70,7 +71,7 @@ def checkVictoryCol(board, player, col):
             count = 0
     return False
 
-def checkVictoryRow(board, player, row):
+def checkVictoryRow(board, player, row) -> bool:
     """Check Victory in given Row for player index
 
     Args:
@@ -91,7 +92,16 @@ def checkVictoryRow(board, player, row):
             count = 0
     return False
 
-def checkVictoryDia(board, player):
+def checkVictoryDia(board, player) -> bool:
+    """Check Victory in both diagonals for player index
+
+    Args:
+        board (list): 2D array
+        player (int): player index (-1 or 1)
+
+    Returns:
+        bool: is Victory
+    """
     count = 0
     for i in range(3):
         for j in range(4):
@@ -114,7 +124,7 @@ def checkVictoryDia(board, player):
         count = 0
     return False
 
-def checkVictory(board, player):
+def checkVictory(board, player) -> bool:
     """Checks the board for victory
 
     Args:
@@ -133,9 +143,9 @@ def checkVictory(board, player):
     if checkVictoryDia(board, player):
         return True
     return False
-    
 
-def findOpenRow(board, col):
+
+def findOpenRow(board, col) -> int:
     """Search a column for the lowest open row
 
     Args:
@@ -150,7 +160,7 @@ def findOpenRow(board, col):
             return -i
     return None
 
-def Move(board, player, col):
+def Move(board, player, col) -> bool:
     """Sets the player index in the game array
 
     Args:
@@ -180,8 +190,9 @@ def unMove(board, col):
     else:
         board[col][0] = 0
 
-def countCol(board, player, n):
-    """
+
+def countCol(board, player, n) -> int:
+    """Counts the consecutive elements in a column
 
     Args:
         board (list): 2D array storing the board
@@ -204,7 +215,17 @@ def countCol(board, player, n):
                 count = 0
     return points
 
-def countRow(board, player, n):
+def countRow(board, player, n) -> int:
+    """Counts the consecutive elements in a row
+
+    Args:
+        board (list): 2D array storing the board
+        player (int): player index
+        n (int): count of consecutive player elements
+
+    Returns:
+        int: generated points
+    """
     points = 0
     for row in range(6):
         count = 0
@@ -218,7 +239,17 @@ def countRow(board, player, n):
                 count = 0
     return points
 
-def countDiagonal(board, player, n):
+def countDiagonal(board, player, n) -> int:
+    """Counts the consecutive elements in the Diagonal
+
+    Args:
+        board (list): 2D array storing the board
+        player (int): player index
+        n (int): count of consecutive player elements
+
+    Returns:
+        int: generated points
+    """
     count = 0
     points = 0
     for i in range(3):
