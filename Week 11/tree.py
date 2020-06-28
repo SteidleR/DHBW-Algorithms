@@ -38,10 +38,11 @@ class Node:
         screen = str(self.name) + "\n"
         if self.children:
             for c in self.children:
-                screen += "   "*level + "|---" + str(c.printNode(level+1)) + "\n"
+                screen += "   "*level + "|---(" + str(c.printNode(level+1)) + "\n"
             return screen
         else:
             return self.name
+
 
 def printTree(root):
     """Prints the complete Tree of given root
