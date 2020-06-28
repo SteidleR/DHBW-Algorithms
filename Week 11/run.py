@@ -1,7 +1,17 @@
+from app import App
+app = App(
+    "Connect 4",
+    "Connect 4 with computer opponent",
+    "Connect 4 Game, GUI made with pygame. Computer uses minimax algorithm to create moves",
+    "Robin Steidle",
+    "0.4"
+)
+
 import numpy as np
 import pygame
 import sys
 import math
+
 
 # Constants
 ROW_COUNT = 6
