@@ -10,6 +10,8 @@ app_info = {
 import random
 from tree import Node, printTree
 
+import time
+
 board = [
     [0, 0, 0, 0, 0, 0], # Column
     [0, 0, 0, 0, 0, 0],
@@ -36,7 +38,7 @@ def boardInit():
     """
     return board.copy()
 
-def boardPrint(board):
+def boardPrint(board: list):
     """Outputs the board on the Terminal or as GUI
 
     Args:
@@ -50,17 +52,7 @@ def boardPrint(board):
         pass
 
 
-def checkVictoryCol(board, player, col) -> bool:
-    """Check Victory in given Column for player index
-
-    Args:
-        board (list): 2D array
-        player (int): player index (-1 or 1)
-        col (int): Column index (range: 0-6)
-
-    Returns:
-        bool: is Victory
-    """
+def checkVictoryCol(board: list, player: int, col: int) -> bool:
     count = 0
     for i in range(6):
         if board[col][i] == player:
@@ -71,17 +63,8 @@ def checkVictoryCol(board, player, col) -> bool:
             count = 0
     return False
 
-def checkVictoryRow(board, player, row) -> bool:
-    """Check Victory in given Row for player index
 
-    Args:
-        board (list): 2D array
-        player (int): player index (-1 or 1)
-        row (int): Row index (range: 0-6)
-
-    Returns:
-        bool: is Victory
-    """
+def checkVictoryRow(board: list, player: int, row: int) -> bool:
     count = 0
     for i in range(7):
         if board[i][row] == player:
@@ -92,16 +75,8 @@ def checkVictoryRow(board, player, row) -> bool:
             count = 0
     return False
 
-def checkVictoryDia(board, player) -> bool:
-    """Check Victory in both diagonals for player index
 
-    Args:
-        board (list): 2D array
-        player (int): player index (-1 or 1)
-
-    Returns:
-        bool: is Victory
-    """
+def checkVictoryDia(board: list, player: int) -> bool:
     count = 0
     for i in range(3):
         for j in range(4):
@@ -124,7 +99,8 @@ def checkVictoryDia(board, player) -> bool:
         count = 0
     return False
 
-def checkVictory(board, player) -> bool:
+
+def checkVictory(board: list, player: int) -> bool:
     """Checks the board for victory
 
     Args:
@@ -145,22 +121,14 @@ def checkVictory(board, player) -> bool:
     return False
 
 
-def findOpenRow(board, col) -> int:
-    """Search a column for the lowest open row
-
-    Args:
-        board (list): 2D array storing the board
-        col (int): index of column in list
-
-    Returns:
-        int: index of lowest open row
-    """
+def findOpenRow(board: list, col: int) -> int:
     for i in range(1, 7):
         if board[col][-i] == 0:
             return -i
     return None
 
-def Move(board, player, col) -> bool:
+
+def Move(board: list, player: int, col: int) -> bool:
     """Sets the player index in the game array
 
     Args:
@@ -177,7 +145,8 @@ def Move(board, player, col) -> bool:
     else: 
         return False
 
-def unMove(board, col):
+
+def unMove(board: list, col: int):
     """Removes the last move in the given column
 
     Args:
@@ -191,95 +160,7 @@ def unMove(board, col):
         board[col][0] = 0
 
 
-def countCol(board, player, n) -> int:
-    """Counts the consecutive elements in a column
-
-    Args:
-        board (list): 2D array storing the board
-        player (int): player index
-        n (int): count of consecutive player elements
-
-    Returns:
-        int: generated points
-    """
-    points = 0
-    for col in range(7):
-        count = 0
-        for i in range(6):
-            if board[col][i] == player:
-                count += 1
-                if count == n:
-                    points += 2**n
-                    count = 0
-            else:
-                count = 0
-    return points
-
-def countRow(board, player, n) -> int:
-    """Counts the consecutive elements in a row
-
-    Args:
-        board (list): 2D array storing the board
-        player (int): player index
-        n (int): count of consecutive player elements
-
-    Returns:
-        int: generated points
-    """
-    points = 0
-    for row in range(6):
-        count = 0
-        for i in range(7):
-            if board[i][row] == player:
-                count += 1
-                if count == n:
-                    points += 2**n
-                    count = 0
-            else:
-                count = 0
-    return points
-
-def countDiagonal(board, player, n) -> int:
-    """Counts the consecutive elements in the Diagonal
-
-    Args:
-        board (list): 2D array storing the board
-        player (int): player index
-        n (int): count of consecutive player elements
-
-    Returns:
-        int: generated points
-    """
-    count = 0
-    points = 0
-    for i in range(3):
-        for j in range(4):
-            for p in range(4):
-                if board[j+p][i+p] == player: 
-                    count += 1
-                    if count == n: 
-                        points += 2**n
-                        count = 0
-                else: 
-                    count = 0
-            count = 0
-        count = 0
-    
-    for i in range(3):
-        for j in range(3,7):
-            for p in range(4):
-                if board[j-p][i+p] == player: 
-                    count += 1
-                    if count == 4: 
-                        points += 2**n
-                        count = 0
-                else: 
-                    count = 0
-            count = 0
-        count = 0
-    return points
-
-def boardBasicEval(board, player, opponent):
+def boardBasicEval(board: list, player: int, opponent: int) -> int:
     """Calculates a Scalar for the given board
 
     Args:
@@ -290,24 +171,15 @@ def boardBasicEval(board, player, opponent):
     Returns:
         int: a scalar that describes the current situation on the board
     """
-    points = 0
-
     if checkVictory(board, player):
-        return 500
-    for i in range(2,4):
-        points += countCol(board, player, i)
-        points += countRow(board, player, i)
-        points += countDiagonal(board, player, i)
+        return 1
+    elif checkVictory(board, opponent):
+        return -1
+    else:
+        return 0
 
-    if checkVictory(board, -player):
-        return 500
-    for i in range(2,4):
-        points -= countCol(board, opponent, i)
-        points -= countRow(board, opponent, i)
-        points -= countDiagonal(board, opponent, i)  
-    return points
 
-def createTree(board, player, opponent, level, parent):
+def createTree(board: int, player: int, opponent: int, func: int, level: int, parent: int):
     """Generates a Minimax-Tree
 
     Args:
@@ -320,17 +192,22 @@ def createTree(board, player, opponent, level, parent):
     Returns:
         None: to break the function
     """
-    tree = []
     for col in range(7):
         if not Move(board, player, col):
             return
-        basicEval = boardBasicEval(board, player, opponent)
-        node = Node(basicEval, parent=parent)
+        node = Node(0, parent=parent)
         if level > 0:
-            createTree(board, -player, -opponent, level-1, node)
+            createTree(board, -player, -opponent, -func, level-1, node)
+            v = node.getChildValues()
+            v.sort()
+            node.name = v[0 if func<0 else -1]
+        else:
+            basicEval = boardBasicEval(board, player, opponent)
+            node.name = basicEval
         unMove(board, col)
 
-def findBestPath(tree, func) -> int,int:
+
+def findBestPath(tree: object, func: int) -> [int, int]:
     """Executes the Minimax algorithm
 
     Args:
@@ -365,11 +242,14 @@ def findMove(board, player, opponent, level) -> int:
         int: index of the best available move
     """
     tree = Node("Start")
-    createTree(board, player, opponent, level-1, tree)
-    val, best = findBestPath(tree, 1)
+    createTree(board, player, opponent, 1, level-1, tree)
     printTree(tree)
-    print(best, val)
-    return best
+    # val, best = findBestPath(tree, 1)
+    v = tree.getChildValues()
+    val = dict(zip(v, range(len(v))))
+    print(val)
+    val = sorted(val.items(), key=lambda x: x[1], reverse=True)
+    return val[0]
 
 
 def runAsAscii(board):
@@ -379,7 +259,7 @@ def runAsAscii(board):
         board (list): 2D Array storing the board
     """
     player = random.choice([-1, 1])
-    u_level = 0
+    u_level = 1
     print("You are Player "+player_ind[player][0])
     boardPrint(board)
     while True:
@@ -399,6 +279,8 @@ def runAsAscii(board):
         if checkVictory(board, -player):
             print("You lose the game!")
             break
+        time.sleep(1)
+
 
 if __name__ == "__main__":
     print(checkVictory(board, -1))

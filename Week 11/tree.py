@@ -19,6 +19,12 @@ class Node:
         """
         self.children.append(child)
 
+    def getChildValues(self):
+        v = []
+        for c in self.children:
+            v.append(c.name)
+        return v
+
     def printNode(self, level=0):
         """Converts the Node with subelements to printable string
 
