@@ -14,10 +14,12 @@ SQUARESIZE = 100
 RADIUS = int(SQUARESIZE / 2 - SQUARESIZE / 20)
 BLUE = (0, 0, 200)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
 
 ELEM_ID = [1, 2]
 
-COLOR_PLAYER = [(255, 0, 0), (255, 255, 0)]
+COLOR_PLAYER = [RED, YELLOW]
 
 PLAYER = random.choice(ELEM_ID)
 BOT = ELEM_ID[-PLAYER]
@@ -36,6 +38,56 @@ SCORE_TWO = 2
 SCORE_OPP_THREE = -8
 
 
+def BoardInit():
+    """ Creates an empty board """
+    board = np.zeros((ROW_COUNT, COL_COUNT))
+    return board
+
+
+def BoardPrint(board):
+    print(np.flip(board, 0))
+
+
+def BoardDraw(board, screen, height):
+    """ Draws the board on the pygame screen
+
+    :param board: Array storing the game board
+    :param screen: pygame display
+    :param height: height of the window
+    """
+    for col in range(COL_COUNT):
+        for row in range(ROW_COUNT):
+            pygame.draw.rect(screen, BLUE, (col * SQUARESIZE, row * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
+            circle(screen, BLACK, (int(SQUARESIZE * (0.5 + col)), int(SQUARESIZE * (1.5 + row))), RADIUS)
+    for col in range(COL_COUNT):
+        for row in range(ROW_COUNT):
+            index = int(board[row][col])
+            if index != 0:
+                circle(screen, COLOR_PLAYER[index - 1],
+                       (int(SQUARESIZE * (0.5 + col)), height - int(SQUARESIZE * (0.5 + row))), int(RADIUS * 0.95))
+    pygame.display.update()
+    
+
+def WinningScreen(winner, non_player, screen):
+    """ Shows a Winner Notification  on the screen """
+    labelWinner = "Bot " + winner if non_player else ("Bot" if winner == BOT_TURN else "Player")
+    label = pygame.font.SysFont("monospace", 60).render(f"{labelWinner} wins!!", 1, COLOR_PLAYER[winner])
+    screen.blit(label, (40, 10))
+    pygame.display.update()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+
+def FindOpenRow(board, col):
+    """ find the lowest row without a 'disc' """
+    for row in range(ROW_COUNT):
+        if board[row][col] == 0:
+            return row
+    return False
+
+
 def Move(board, col, row, player):
     board[row][col] = player
 
@@ -47,36 +99,6 @@ def UnMove(board, col):
     else:
         row -= 1
     Move(board, col, row, EMPTY)
-
-
-def BoardInit():
-    board = np.zeros((ROW_COUNT, COL_COUNT))
-    return board
-
-
-def BoardPrint(board):
-    print(np.flip(board, 0))
-
-
-def BoardDraw(board, screen, height):
-    for col in range(COL_COUNT):
-        for row in range(ROW_COUNT):
-            pygame.draw.rect(screen, BLUE, (col * SQUARESIZE, row * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
-            circle(screen, BLACK,  (int(SQUARESIZE * (0.5 + col)), int(SQUARESIZE * (1.5 + row))), RADIUS)
-    for col in range(COL_COUNT):
-        for row in range(ROW_COUNT):
-            index = int(board[row][col])
-            if index != 0:
-                circle(screen, COLOR_PLAYER[index - 1],
-                       (int(SQUARESIZE * (0.5 + col)), height - int(SQUARESIZE * (0.5 + row))), int(RADIUS * 0.95))
-    pygame.display.update()
-
-
-def FindOpenRow(board, col):
-    for row in range(ROW_COUNT):
-        if board[row][col] == 0:
-            return row
-    return False
 
 
 def CheckVictoryHorizontal(board, player):
@@ -110,11 +132,23 @@ def CheckVictoryDiagonalNeg(board, player):
 
 
 def CheckVictory(board, player):
-    return CheckVictoryHorizontal(board, player) or CheckVictoryVertical(board, player) \
-           or CheckVictoryDiagonalPos(board, player) or CheckVictoryDiagonalNeg(board, player)
+    """ Checks if the player has won the Game
+
+    :param board: Array storing the game board
+    :param player: Board Items to check for
+    :return: Is Victory or not
+    """
+    return CheckVictoryHorizontal(board, player) or CheckVictoryVertical(board, player) or CheckVictoryDiagonalPos(
+        board, player) or CheckVictoryDiagonalNeg(board, player)
 
 
 def EvalWindow(window, player):
+    """ Generates a score for a given array based on the count of the player disks
+
+    :param window: array storing the current line
+    :param player: player index
+    :return: score of the window
+    """
     opponent = 1 - player
 
     score = 0
@@ -153,6 +187,13 @@ def BoardBasicEval(board, player):
 
 
 def BoardBetterEval(board, player):
+    """ Generates a score for the current board.
+    Score representing the state of the game
+
+    :param board: Array storing the game board
+    :param player: current player id
+    :return: score
+    """
     score = 0
 
     # Center Column
@@ -190,6 +231,16 @@ def BoardBetterEval(board, player):
 
 
 def minimax(board, depth, alpha, beta, maximizing_player):
+    """ Minimax Algorithm implementation with Alpha-Beta Pruning
+
+    :param board: Array storing the game board
+    :param depth: Depth for the search
+    :param alpha: Initial value should be -Infinity
+    :param beta: Initial value should be +Infinity
+    :param maximizing_player: treated Player (maximizing and minimizing player)
+    :return: Column for best move, score of the move
+    :rtype: int, int
+    """
     valid_moves = GetAvailableMoves(board)
     if depth == 0 or IsTerminalNode(board):
         if depth != 0:
@@ -236,8 +287,9 @@ def minimax(board, depth, alpha, beta, maximizing_player):
 
 
 def FindMove(board, player):
+    """ Basic Bot Move """
     valid_moves = GetAvailableMoves(board)
-    best = -10000
+    best = -math.inf
     best_col = random.choice(valid_moves)
     for col in valid_moves:
         row = FindOpenRow(board, col)
@@ -247,7 +299,6 @@ def FindMove(board, player):
         if score > best:
             best = score
             best_col = col
-
     return best_col
 
 
@@ -276,15 +327,13 @@ class Bot:
 
 
 def Game():
+    """ Main Game loop """
     board = BoardInit()
-    game_over = False
     turn = 0
-
-    non_player = False
 
     bot = Bot(BOT_TURN, level=4)
 
-    bot2 = None
+    non_player = False
     if "non-player" in sys.argv:
         non_player = True
         bot2 = Bot(PLAYER_TURN, level=4)
@@ -295,52 +344,51 @@ def Game():
     size = (width, height)
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Connect 4")
-    while not game_over:
+    while True:
         BoardDraw(board, screen, height)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
-            if event.type == pygame.MOUSEMOTION:
-                if turn == PLAYER_TURN:
-                    pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
-                    circle(screen, COLOR_PLAYER[turn], (event.pos[0], int(SQUARESIZE / 2)), int(RADIUS * 0.9))
+            if event.type == pygame.MOUSEMOTION and turn == PLAYER_TURN and not non_player:
+                pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
+                circle(screen, COLOR_PLAYER[turn], (event.pos[0], int(SQUARESIZE / 2)), int(RADIUS * 0.9))
+                pygame.display.update()
 
+            if event.type == pygame.MOUSEBUTTONDOWN and turn == PLAYER_TURN and not non_player:
+                posx = event.pos[0]
+                col = int(math.floor(posx / SQUARESIZE))
+                row = FindOpenRow(board, col)
+                if type(row) == int:
+                    Move(board, col, row, ELEM_ID[turn])
+                    if CheckVictory(board, ELEM_ID[turn]):
+                        print("Player Wins!")
+                        break
+                    turn += 1
+                    turn = turn % 2
+                    BoardDraw(board, screen, height)
+
+        if non_player and turn == PLAYER_TURN:
+            bot2.Move(board)
+            if CheckVictory(board, ELEM_ID[turn]):
+                print("Bot 2 Wins!")
+                break
+            turn += 1
+            turn = turn % 2
+            BoardDraw(board, screen, height)
+
+        if turn == BOT_TURN:
+            pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
             pygame.display.update()
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if turn == PLAYER_TURN and not non_player:
-                    posx = event.pos[0]
-                    col = int(math.floor(posx / SQUARESIZE))
-                    row = FindOpenRow(board, col)
-                    if type(row) == int:
-                        Move(board, col, row, ELEM_ID[turn])
-                        if CheckVictory(board, ELEM_ID[turn]):
-                            print("Player Wins!")
-                            game_over = True
-                        turn += 1
-                        turn = turn % 2
-
-        if non_player:
-            if turn == PLAYER_TURN and not game_over:
-                # col = FindMove(board, BOT)
-                bot2.Move(board)
-                if CheckVictory(board, ELEM_ID[turn]):
-                    print("Bot 2 Wins!")
-                    game_over = True
-                turn += 1
-                turn = turn % 2
-
-        if turn == BOT_TURN and not game_over:
-            # col = FindMove(board, BOT)
             bot.Move(board)
             if CheckVictory(board, ELEM_ID[turn]):
                 print("Bot Wins!")
-                game_over = True
+                break
             turn += 1
             turn = turn % 2
-
-    BoardDraw(board, screen, height)
+            BoardDraw(board, screen, height)
+    
+    WinningScreen(turn, non_player, screen)
 
 
 if __name__ == "__main__":
