@@ -46,8 +46,20 @@ SCORE_WIN = 100
 SCORE_THREE = 5
 SCORE_TWO = 2
 
-SCORE_OPP_WIN = -300
 SCORE_OPP_THREE = -4
+
+
+def Move(board, col, row, player):
+    board[row][col] = player
+
+
+def UnMove(board, col):
+    row = FindOpenRow(board, col)
+    if row == False:
+        row = -1
+    else:
+        row -= 1
+    Move(board, col, row, EMPTY)
 
 
 def BoardInit():
@@ -126,28 +138,6 @@ def CheckVictory(board, player):
         return False
 
 
-def Move(board, col, row, player):
-    board[row][col] = player
-
-
-def UnMove(board, col):
-    row = FindOpenRow(board, col)
-    if row == False:
-        row = -1
-    else:
-        row -= 1
-    Move(board, col, row, EMPTY)
-
-
-def BoardBasicEval(board, player):
-    if CheckVictory(board, player):
-        return 1
-    elif CheckVictory(board, 1 - player):
-        return -1
-    else:
-        return 0
-
-
 def EvalWindow(window, player):
     opponent = 1 - player
 
@@ -163,6 +153,27 @@ def EvalWindow(window, player):
         score += SCORE_OPP_THREE
 
     return score
+
+
+def IsTerminalNode(board):
+    return CheckVictory(board, PLAYER) or CheckVictory(board, BOT) or len(GetAvailableMoves(board)) == 0
+
+
+def GetAvailableMoves(board):
+    moves = []
+    for col in range(COL_COUNT):
+        if type(FindOpenRow(board, col)) == int:
+            moves.append(col)
+    return moves
+
+
+def BoardBasicEval(board, player):
+    if CheckVictory(board, player):
+        return 1
+    elif CheckVictory(board, 1 - player):
+        return -1
+    else:
+        return 0
 
 
 def BoardBetterEval(board, player):
@@ -200,10 +211,6 @@ def BoardBetterEval(board, player):
             score += EvalWindow(window, player)
 
     return score
-
-
-def IsTerminalNode(board):
-    return CheckVictory(board, PLAYER) or CheckVictory(board, BOT) or len(GetAvailableMoves(board)) == 0
 
 
 def minimax(board, depth, alpha, beta, maximizingPlayer):
@@ -252,14 +259,6 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
         return column, value
 
 
-def GetAvailableMoves(board):
-    moves = []
-    for col in range(COL_COUNT):
-        if type(FindOpenRow(board, col)) == int:
-            moves.append(col)
-    return moves
-
-
 def FindMove(board, player):
     valid_moves = GetAvailableMoves(board)
     best = -10000
@@ -267,7 +266,7 @@ def FindMove(board, player):
     for col in valid_moves:
         row = FindOpenRow(board, col)
         Move(board, col, row, player)
-        score = BoardBetterEval(board, player)
+        score = BoardBasicEval(board, player)
         UnMove(board, col)
         if score > best:
             best = score
@@ -276,11 +275,42 @@ def FindMove(board, player):
     return best_col
 
 
+class Bot:
+    def __init__(self, player=2, level=0):
+        if level == 0:
+            self.method = "Basic"
+        else:
+            self.method = "Advanced"
+        self.levels = {1: ["easy", 2], 2: ["intermediate", 3], 3: ["Hard", 4], 4: ["Impossible", 6]}
+        self.depth = self.levels[level][1]
+        self.player = player
+
+    def Move(self, board):
+        row = False
+        if self.method == "Basic":
+            while type(row) != int:
+                col = FindMove(board, self.player)
+                row = FindOpenRow(board, col)
+        else:
+            while type(row) != int:
+                col, score = minimax(board, self.depth, -math.inf, math.inf, True)
+                row = FindOpenRow(board, col)
+        Move(board, col, row, ELEM_ID[self.player])
+
+
 if __name__ == "__main__":
 
     board = BoardInit()
     game_over = False
     turn = 0
+
+    non_player = False
+
+    bot = Bot(BOT_TURN, level=4)
+
+    if "non-player" in sys.argv:
+        non_player = True
+        bot2 = Bot(PLAYER_TURN, level=4)
 
     pygame.init()
     width = COL_COUNT * SQUARESIZE
@@ -298,13 +328,12 @@ if __name__ == "__main__":
             if event.type == pygame.MOUSEMOTION:
                 if turn == PLAYER_TURN:
                     pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
-                    posx = event.pos[0]
-                    pygame.draw.circle(screen, COLOR_PLAYER[turn], (posx, int(SQUARESIZE / 2)), int(RADIUS * 0.9))
+                    pygame.draw.circle(screen, COLOR_PLAYER[turn], (event.pos[0], int(SQUARESIZE / 2)), int(RADIUS * 0.9))
 
             pygame.display.update()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if turn == PLAYER_TURN:
+                if turn == PLAYER_TURN and not non_player:
                     posx = event.pos[0]
                     col = int(math.floor(posx / SQUARESIZE))
                     row = FindOpenRow(board, col)
@@ -317,12 +346,10 @@ if __name__ == "__main__":
                         turn += 1
                         turn = turn % 2
 
-        if turn == BOT_TURN and not game_over:
-            # col = FindMove(board, BOT)
-            col, score = minimax(board, 5, -math.inf, math.inf, True)
-            row = FindOpenRow(board, col)
-            if type(row) == int:
-                Move(board, col, row, ELEM_ID[turn])
+        if non_player:
+            if turn == PLAYER_TURN and not game_over:
+                # col = FindMove(board, BOT)
+                bot2.Move(board)
                 if CheckVictory(board, ELEM_ID[turn]):
                     print("Bot Wins!")
                     game_over = True
@@ -330,6 +357,14 @@ if __name__ == "__main__":
                 turn += 1
                 turn = turn % 2
 
-        if game_over:
+        if turn == BOT_TURN and not game_over:
+            # col = FindMove(board, BOT)
+            bot.Move(board)
+            if CheckVictory(board, ELEM_ID[turn]):
+                print("Bot Wins!")
+                game_over = True
             BoardDraw(board)
-            pygame.time.wait(3000)
+            turn += 1
+            turn = turn % 2
+
+    BoardDraw(board)
