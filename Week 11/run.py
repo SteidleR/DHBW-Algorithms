@@ -4,7 +4,7 @@ import sys
 
 import numpy as np
 import pygame
-from pygame.draw import circle
+from pygame import draw
 
 # Constants
 ROW_COUNT = 6
@@ -21,11 +21,11 @@ ELEM_ID = [1, 2]
 
 COLOR_PLAYER = [RED, YELLOW]
 
-PLAYER = random.choice(ELEM_ID)
-BOT = ELEM_ID[-PLAYER]
+PLAYER1 = random.choice(ELEM_ID)
+PLAYER2 = ELEM_ID[-PLAYER1]
 
-PLAYER_TURN = PLAYER - 1
-BOT_TURN = BOT - 1
+PLAYER1_TURN = PLAYER1 - 1
+PLAYER2_TURN = PLAYER2 - 1
 
 EMPTY = 0
 
@@ -57,20 +57,20 @@ def BoardDraw(board, screen, height):
     """
     for col in range(COL_COUNT):
         for row in range(ROW_COUNT):
-            pygame.draw.rect(screen, BLUE, (col * SQUARESIZE, row * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
-            circle(screen, BLACK, (int(SQUARESIZE * (0.5 + col)), int(SQUARESIZE * (1.5 + row))), RADIUS)
+            draw.rect(screen, BLUE, (col * SQUARESIZE, row * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
+            draw.circle(screen, BLACK, (int(SQUARESIZE * (0.5 + col)), int(SQUARESIZE * (1.5 + row))), RADIUS)
     for col in range(COL_COUNT):
         for row in range(ROW_COUNT):
             index = int(board[row][col])
             if index != 0:
-                circle(screen, COLOR_PLAYER[index - 1],
-                       (int(SQUARESIZE * (0.5 + col)), height - int(SQUARESIZE * (0.5 + row))), int(RADIUS * 0.95))
+                draw.circle(screen, COLOR_PLAYER[index - 1],
+                            (int(SQUARESIZE * (0.5 + col)), height - int(SQUARESIZE * (0.5 + row))), int(RADIUS * 0.95))
     pygame.display.update()
     
 
 def WinningScreen(winner, non_player, screen):
     """ Shows a Winner Notification  on the screen """
-    labelWinner = "Bot " + winner if non_player else ("Bot" if winner == BOT_TURN else "Player")
+    labelWinner = "Bot " + winner if non_player else ("Bot" if winner == PLAYER2_TURN else "Player")
     label = pygame.font.SysFont("monospace", 60).render(f"{labelWinner} wins!!", 1, COLOR_PLAYER[winner])
     screen.blit(label, (40, 10))
     pygame.display.update()
@@ -166,7 +166,7 @@ def EvalWindow(window, player):
 
 
 def IsTerminalNode(board):
-    return CheckVictory(board, PLAYER) or CheckVictory(board, BOT) or len(GetAvailableMoves(board)) == 0
+    return CheckVictory(board, PLAYER1) or CheckVictory(board, PLAYER2) or len(GetAvailableMoves(board)) == 0
 
 
 def GetAvailableMoves(board):
@@ -244,21 +244,21 @@ def minimax(board, depth, alpha, beta, maximizing_player):
     valid_moves = GetAvailableMoves(board)
     if depth == 0 or IsTerminalNode(board):
         if depth != 0:
-            if CheckVictory(board, BOT):
+            if CheckVictory(board, PLAYER2):
                 return None, 10000000
-            elif CheckVictory(board, PLAYER):
+            elif CheckVictory(board, PLAYER1):
                 return None, -10000000
             else:
                 return None, 0
         else:
-            return None, BoardBetterEval(board, BOT)
+            return None, BoardBetterEval(board, PLAYER2)
 
     if maximizing_player:
         value = -math.inf
         column = random.choice(valid_moves)
         for col in valid_moves:
             row = FindOpenRow(board, col)
-            Move(board, col, row, BOT)
+            Move(board, col, row, PLAYER2)
             _, new_score = minimax(board, depth - 1, alpha, beta, False)
             UnMove(board, col)
             if new_score > value:
@@ -274,7 +274,7 @@ def minimax(board, depth, alpha, beta, maximizing_player):
         column = random.choice(valid_moves)
         for col in valid_moves:
             row = FindOpenRow(board, col)
-            Move(board, col, row, PLAYER)
+            Move(board, col, row, PLAYER1)
             _, new_score = minimax(board, depth - 1, alpha, beta, True)
             UnMove(board, col)
             if new_score < value:
@@ -331,12 +331,12 @@ def Game():
     board = BoardInit()
     turn = 0
 
-    bot = Bot(BOT_TURN, level=4)
+    bot = Bot(PLAYER2_TURN, level=4)
 
-    non_player = False
+    non_player = bot2 = False
     if "non-player" in sys.argv:
         non_player = True
-        bot2 = Bot(PLAYER_TURN, level=4)
+        bot2 = Bot(PLAYER1_TURN, level=4)
 
     pygame.init()
     width = COL_COUNT * SQUARESIZE
@@ -344,49 +344,50 @@ def Game():
     size = (width, height)
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Connect 4")
+
     while True:
         BoardDraw(board, screen, height)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
-            if event.type == pygame.MOUSEMOTION and turn == PLAYER_TURN and not non_player:
-                pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
-                circle(screen, COLOR_PLAYER[turn], (event.pos[0], int(SQUARESIZE / 2)), int(RADIUS * 0.9))
+            if event.type == pygame.MOUSEMOTION and turn == PLAYER1_TURN and not non_player:
+                draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
+                draw.circle(screen, COLOR_PLAYER[turn], (event.pos[0], int(SQUARESIZE / 2)), int(RADIUS * 0.9))
                 pygame.display.update()
 
-            if event.type == pygame.MOUSEBUTTONDOWN and turn == PLAYER_TURN and not non_player:
+            if event.type == pygame.MOUSEBUTTONDOWN and turn == PLAYER1_TURN and not non_player:
                 posx = event.pos[0]
                 col = int(math.floor(posx / SQUARESIZE))
                 row = FindOpenRow(board, col)
                 if type(row) == int:
                     Move(board, col, row, ELEM_ID[turn])
+                    BoardDraw(board, screen, height)
                     if CheckVictory(board, ELEM_ID[turn]):
                         print("Player Wins!")
                         break
                     turn += 1
                     turn = turn % 2
-                    BoardDraw(board, screen, height)
 
-        if non_player and turn == PLAYER_TURN:
+        if non_player and turn == PLAYER1_TURN:
             bot2.Move(board)
+            BoardDraw(board, screen, height)
             if CheckVictory(board, ELEM_ID[turn]):
                 print("Bot 2 Wins!")
                 break
             turn += 1
             turn = turn % 2
-            BoardDraw(board, screen, height)
 
-        if turn == BOT_TURN:
-            pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
+        if turn == PLAYER2_TURN:
+            draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
             pygame.display.update()
             bot.Move(board)
+            BoardDraw(board, screen, height)
             if CheckVictory(board, ELEM_ID[turn]):
                 print("Bot Wins!")
                 break
             turn += 1
             turn = turn % 2
-            BoardDraw(board, screen, height)
     
     WinningScreen(turn, non_player, screen)
 
