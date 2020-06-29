@@ -1,21 +1,10 @@
-try:
-    from app import App
-except ImportError:
-    eval(f"class App: pass")
-APP = App(
-    "Connect 4",
-    "A GUI Connect 4 game with computer opponent",
-    "",
-    "Robin Steidle",
-    "0.4"
-)
-
 import math
 import random
 import sys
 
 import numpy as np
 import pygame
+from pygame.draw import circle
 
 # Constants
 ROW_COUNT = 6
@@ -25,12 +14,10 @@ SQUARESIZE = 100
 RADIUS = int(SQUARESIZE / 2 - SQUARESIZE / 20)
 BLUE = (0, 0, 200)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
 
 ELEM_ID = [1, 2]
 
-COLOR_PLAYER = [RED, YELLOW]
+COLOR_PLAYER = [(255, 0, 0), (255, 255, 0)]
 
 PLAYER = random.choice(ELEM_ID)
 BOT = ELEM_ID[-PLAYER]
@@ -46,7 +33,7 @@ SCORE_WIN = 100
 SCORE_THREE = 5
 SCORE_TWO = 2
 
-SCORE_OPP_THREE = -4
+SCORE_OPP_THREE = -8
 
 
 def Move(board, col, row, player):
@@ -55,7 +42,7 @@ def Move(board, col, row, player):
 
 def UnMove(board, col):
     row = FindOpenRow(board, col)
-    if row == False:
+    if row is False:
         row = -1
     else:
         row -= 1
@@ -71,22 +58,17 @@ def BoardPrint(board):
     print(np.flip(board, 0))
 
 
-def BoardDraw(board):
+def BoardDraw(board, screen, height):
     for col in range(COL_COUNT):
         for row in range(ROW_COUNT):
             pygame.draw.rect(screen, BLUE, (col * SQUARESIZE, row * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
-            pygame.draw.circle(screen, BLACK,
-                               (int(col * SQUARESIZE + SQUARESIZE / 2), int(row * SQUARESIZE + SQUARESIZE * 1.5)),
-                               RADIUS)
+            circle(screen, BLACK,  (int(SQUARESIZE * (0.5 + col)), int(SQUARESIZE * (1.5 + row))), RADIUS)
     for col in range(COL_COUNT):
         for row in range(ROW_COUNT):
             index = int(board[row][col])
             if index != 0:
-                pygame.draw.circle(screen, COLOR_PLAYER[index - 1],
-                                   (int(col * SQUARESIZE + SQUARESIZE / 2),
-                                    height - int(row * SQUARESIZE + SQUARESIZE * 0.5)),
-                                   int(RADIUS * 0.95))
-
+                circle(screen, COLOR_PLAYER[index - 1],
+                       (int(SQUARESIZE * (0.5 + col)), height - int(SQUARESIZE * (0.5 + row))), int(RADIUS * 0.95))
     pygame.display.update()
 
 
@@ -114,28 +96,22 @@ def CheckVictoryVertical(board, player):
 def CheckVictoryDiagonalPos(board, player):
     for col in range(COL_COUNT - 3):
         for row in range(ROW_COUNT - 3):
-            if board[row][col] == board[row + 1][col + 1] == board[row + 2][col + 2] == board[row + 3][col + 3] == player:
+            if board[row][col] == board[row + 1][col + 1] == board[row + 2][col + 2] \
+                    == board[row + 3][col + 3] == player:
                 return True
 
 
 def CheckVictoryDiagonalNeg(board, player):
     for col in range(COL_COUNT - 3):
         for row in range(3, ROW_COUNT):
-            if board[row][col] == board[row - 1][col + 1] == board[row - 2][col + 2] == board[row - 3][col + 3] == player:
+            if board[row][col] == board[row - 1][col + 1] == board[row - 2][col + 2] \
+                    == board[row - 3][col + 3] == player:
                 return True
 
 
 def CheckVictory(board, player):
-    if CheckVictoryHorizontal(board, player):
-        return True
-    elif CheckVictoryVertical(board, player):
-        return True
-    elif CheckVictoryDiagonalPos(board, player):
-        return True
-    elif CheckVictoryDiagonalNeg(board, player):
-        return True
-    else:
-        return False
+    return CheckVictoryHorizontal(board, player) or CheckVictoryVertical(board, player) \
+           or CheckVictoryDiagonalPos(board, player) or CheckVictoryDiagonalNeg(board, player)
 
 
 def EvalWindow(window, player):
@@ -180,7 +156,7 @@ def BoardBetterEval(board, player):
     score = 0
 
     # Center Column
-    center_array = [int(i) for i in list(board[:, COL_COUNT//2])]
+    center_array = [int(i) for i in list(board[:, COL_COUNT // 2])]
     center_count = center_array.count(player)
     score += center_count * 3
 
@@ -213,7 +189,7 @@ def BoardBetterEval(board, player):
     return score
 
 
-def minimax(board, depth, alpha, beta, maximizingPlayer):
+def minimax(board, depth, alpha, beta, maximizing_player):
     valid_moves = GetAvailableMoves(board)
     if depth == 0 or IsTerminalNode(board):
         if depth != 0:
@@ -226,13 +202,13 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
         else:
             return None, BoardBetterEval(board, BOT)
 
-    if maximizingPlayer:
+    if maximizing_player:
         value = -math.inf
         column = random.choice(valid_moves)
         for col in valid_moves:
             row = FindOpenRow(board, col)
             Move(board, col, row, BOT)
-            _, new_score = minimax(board, depth-1, alpha, beta, False)
+            _, new_score = minimax(board, depth - 1, alpha, beta, False)
             UnMove(board, col)
             if new_score > value:
                 value = new_score
@@ -248,7 +224,7 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
         for col in valid_moves:
             row = FindOpenRow(board, col)
             Move(board, col, row, PLAYER)
-            _, new_score = minimax(board, depth-1, alpha, beta, True)
+            _, new_score = minimax(board, depth - 1, alpha, beta, True)
             UnMove(board, col)
             if new_score < value:
                 value = new_score
@@ -287,6 +263,7 @@ class Bot:
 
     def Move(self, board):
         row = False
+        col = None
         if self.method == "Basic":
             while type(row) != int:
                 col = FindMove(board, self.player)
@@ -298,8 +275,7 @@ class Bot:
         Move(board, col, row, ELEM_ID[self.player])
 
 
-if __name__ == "__main__":
-
+def Game():
     board = BoardInit()
     game_over = False
     turn = 0
@@ -308,6 +284,7 @@ if __name__ == "__main__":
 
     bot = Bot(BOT_TURN, level=4)
 
+    bot2 = None
     if "non-player" in sys.argv:
         non_player = True
         bot2 = Bot(PLAYER_TURN, level=4)
@@ -318,9 +295,8 @@ if __name__ == "__main__":
     size = (width, height)
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Connect 4")
-    BoardDraw(board)
     while not game_over:
-        BoardDraw(board)
+        BoardDraw(board, screen, height)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -328,7 +304,7 @@ if __name__ == "__main__":
             if event.type == pygame.MOUSEMOTION:
                 if turn == PLAYER_TURN:
                     pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
-                    pygame.draw.circle(screen, COLOR_PLAYER[turn], (event.pos[0], int(SQUARESIZE / 2)), int(RADIUS * 0.9))
+                    circle(screen, COLOR_PLAYER[turn], (event.pos[0], int(SQUARESIZE / 2)), int(RADIUS * 0.9))
 
             pygame.display.update()
 
@@ -342,7 +318,6 @@ if __name__ == "__main__":
                         if CheckVictory(board, ELEM_ID[turn]):
                             print("Player Wins!")
                             game_over = True
-                        BoardDraw(board)
                         turn += 1
                         turn = turn % 2
 
@@ -351,9 +326,8 @@ if __name__ == "__main__":
                 # col = FindMove(board, BOT)
                 bot2.Move(board)
                 if CheckVictory(board, ELEM_ID[turn]):
-                    print("Bot Wins!")
+                    print("Bot 2 Wins!")
                     game_over = True
-                BoardDraw(board)
                 turn += 1
                 turn = turn % 2
 
@@ -363,8 +337,11 @@ if __name__ == "__main__":
             if CheckVictory(board, ELEM_ID[turn]):
                 print("Bot Wins!")
                 game_over = True
-            BoardDraw(board)
             turn += 1
             turn = turn % 2
 
-    BoardDraw(board)
+    BoardDraw(board, screen, height)
+
+
+if __name__ == "__main__":
+    Game()
